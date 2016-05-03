@@ -20,6 +20,10 @@ public class Reservation {
         }
     }
 
+    public static Connection getConnection() {
+        return connection;
+    }
+
     public static void releaseConnection(Connection con) {
         try {
             connection.close();
