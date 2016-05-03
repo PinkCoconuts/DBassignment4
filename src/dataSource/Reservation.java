@@ -40,6 +40,7 @@ public class Reservation {
                     + "SET RESERVED= ? "
                     + ", BOOKING_TIME= ? " //should not be 111111
                     + "WHERE PLANE_NO= ? "
+                    + "AND RESERVED IS NULL "
                     + "AND ROWNUM < 2";
             PreparedStatement preparedStatementUpdate = connection.prepareStatement(updateSQL);
             preparedStatementUpdate.setLong(1, id);

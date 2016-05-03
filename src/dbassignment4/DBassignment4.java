@@ -9,7 +9,8 @@ public class DBassignment4 {
 
     public static void main(String[] args) {
         reservation = new Reservation("cphbs96", "cphbs96");
-        Seat seat = reservation.reserve("CR9", 1000);
+        Seat seat = reservation.reserve("CR9", 1200);
+        System.out.println("Seat number: "+ seat.getSeat_no());
         reservation.releaseConnection(reservation.getConnection());
     }
 
