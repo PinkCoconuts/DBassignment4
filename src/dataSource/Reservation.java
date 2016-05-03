@@ -73,6 +73,26 @@ public class Reservation {
 
     public int book(String plane_no, String seat_no, long id) {
         try {
+            //check if the seat is reserved
+            String selectSQL = "SELECT RESERVED, BOOKED FROM SEAT "
+                    + "WHERE PLANE_NO = ?"
+                    + "AND SEAT_NO = ?";
+            PreparedStatement preparedStatementSelect = connection.prepareStatement(selectSQL);
+            preparedStatementSelect.setString(1, plane_no);
+            preparedStatementSelect.setString(2, seat_no);
+            ResultSet rs = preparedStatementSelect.executeQuery();
+            long reserved = 0, 
+                    booked= 0;
+            while (rs.next()) {
+                reserved = rs.getLong("RESERVED");
+                booked= rs.getLong("BOOKED");
+            }
+            if(reserved== 0)
+                return -1;
+            else if(reserved!= id)
+                return -2;
+            else if (booked!= 0)
+                return -4;
             //update the seat record
             String updateSQL = "UPDATE SEAT "
                     + "SET BOOKED= ? "
@@ -88,6 +108,7 @@ public class Reservation {
             preparedStatementUpdate.executeUpdate();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
+            return -5;
         }
         return 0;
     }
