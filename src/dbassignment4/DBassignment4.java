@@ -11,7 +11,8 @@ public class DBassignment4 {
         reservation = new Reservation("cphbs96", "cphbs96");
 //        Seat seat = reservation.reserve("CR9", 1200);
 //        System.out.println("Seat number: "+ seat.getSeat_no());
-        System.out.println("Result from the booked method: "+ reservation.book("CR9", "D1", 1200));
+//        System.out.println("Result from the booked method: "+ reservation.book("CR9", "A1", 1200));
+        reservation.bookAll("CR9");
         reservation.releaseConnection(reservation.getConnection());
     }
 

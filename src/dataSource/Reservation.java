@@ -7,6 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Reservation {
 
@@ -81,35 +83,54 @@ public class Reservation {
             preparedStatementSelect.setString(1, plane_no);
             preparedStatementSelect.setString(2, seat_no);
             ResultSet rs = preparedStatementSelect.executeQuery();
-            long reserved = 0, 
-                    booked= 0;
+            long reserved = 0,
+                    booked = 0;
             while (rs.next()) {
                 reserved = rs.getLong("RESERVED");
-                booked= rs.getLong("BOOKED");
+                booked = rs.getLong("BOOKED");
             }
-            if(reserved== 0)
+            if (reserved == 0) {
                 return -1;
-            else if(reserved!= id)
+            } else if (reserved != id) {
                 return -2;
-            else if (booked!= 0)
+            } else if (booked != 0) {
                 return -4;
-            //update the seat record
-            String updateSQL = "UPDATE SEAT "
-                    + "SET BOOKED= ? "
-                    + "WHERE PLANE_NO= ?"
-                    + "AND SEAT_NO= ?"
-                    + "AND RESERVED= ?"
-                    + "AND BOOKING_TIME> 0";
-            PreparedStatement preparedStatementUpdate = connection.prepareStatement(updateSQL);
-            preparedStatementUpdate.setLong(1, id);
-            preparedStatementUpdate.setString(2, plane_no);
-            preparedStatementUpdate.setString(3, seat_no);
-            preparedStatementUpdate.setLong(4, id);
-            preparedStatementUpdate.executeUpdate();
+            } else {
+                //update the seat record
+                String updateSQL = "UPDATE SEAT "
+                        + "SET BOOKED= ? "
+                        + "WHERE PLANE_NO= ?"
+                        + "AND SEAT_NO= ?"
+                        + "AND RESERVED= ?"
+                        + "AND BOOKING_TIME> 0";
+                PreparedStatement preparedStatementUpdate = connection.prepareStatement(updateSQL);
+                preparedStatementUpdate.setLong(1, id);
+                preparedStatementUpdate.setString(2, plane_no);
+                preparedStatementUpdate.setString(3, seat_no);
+                preparedStatementUpdate.setLong(4, id);
+                preparedStatementUpdate.executeUpdate();
+            }
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
             return -5;
         }
         return 0;
+    }
+
+    public void bookAll(String plane_no) {
+        try {
+            String updateSQL = "UPDATE SEAT "
+                    + "SET BOOKED= ? "
+                    + "WHERE PLANE_NO= ? "
+                    + "AND RESERVED IS NULL "
+                    + "AND BOOKED IS NULL";
+            PreparedStatement preparedStatementUpdate = connection.prepareStatement(updateSQL);
+            preparedStatementUpdate.setLong(1, 999999);
+            preparedStatementUpdate.setString(2, plane_no);
+            preparedStatementUpdate.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println(ex);
+        }
+
     }
 }
