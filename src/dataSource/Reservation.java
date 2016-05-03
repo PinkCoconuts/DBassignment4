@@ -56,12 +56,12 @@ public class Reservation {
             String seat_no = "";
             while (rs.next()) {
                 seat_no = rs.getString("SEAT_NO");
-            } 
+            }
             seat.setPlane_no(plane_no);
             seat.setSeat_no(seat_no);
             seat.setReserved(id);
             seat.setBooked_time(111111); //should not be 111111
-            if(seat_no.equals("")){
+            if (seat_no.equals("")) {
                 System.out.println("Null seat number. Could not find seat");
                 return null;
             }
@@ -69,5 +69,26 @@ public class Reservation {
             System.out.println(ex.getMessage());
         }
         return seat;
+    }
+
+    public int book(String plane_no, String seat_no, long id) {
+        try {
+            //update the seat record
+            String updateSQL = "UPDATE SEAT "
+                    + "SET BOOKED= ? "
+                    + "WHERE PLANE_NO= ?"
+                    + "AND SEAT_NO= ?"
+                    + "AND RESERVED= ?"
+                    + "AND BOOKING_TIME> 0";
+            PreparedStatement preparedStatementUpdate = connection.prepareStatement(updateSQL);
+            preparedStatementUpdate.setLong(1, id);
+            preparedStatementUpdate.setString(2, plane_no);
+            preparedStatementUpdate.setString(3, seat_no);
+            preparedStatementUpdate.setLong(4, id);
+            preparedStatementUpdate.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return 0;
     }
 }
