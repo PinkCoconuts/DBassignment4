@@ -1,21 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package dataSource;
 
 import entities.Seat;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
- *
- * @author mady
- */
 public class Reservation {
 
     private static Connection connection;
@@ -24,7 +16,7 @@ public class Reservation {
         try {
             connection = DriverManager.getConnection("jdbc:oracle:thin:@datdb.cphbusiness.dk:1521:dat", id, pw);
         } catch (SQLException e) {
-            System.out.println("Remember to insert your Oracle ID and PW "+ e);
+            System.out.println("Remember to insert your Oracle ID and PW " + e);
         }
     }
 
@@ -36,21 +28,37 @@ public class Reservation {
         }
     }
 
-    public void reserve(String plane_no, long id) {
-        Seat seat= new Seat();
-        try{
-        Statement stmt = connection.createStatement();
-        String sql = "UPDATE SEAT "
-                + "SET RESERVED = '" 
-                + id + "' ,  BOOKING_TIME= 111111 "
-                + "WHERE PLANE_NO = '"
-                + plane_no + "' "
-                + "AND ROWNUM < 2";
-        stmt.executeUpdate(sql); 
-//        seat.setReserved(id);
-        }
-        catch(SQLException ex){
+    public Seat reserve(String plane_no, long id) {
+        Seat seat = new Seat();
+        try {
+            //update the seat record
+            String updateSQL = "UPDATE SEAT "
+                    + "SET RESERVED= ? "
+                    + ", BOOKING_TIME= ? " //should not be 111111
+                    + "WHERE PLANE_NO= ? "
+                    + "AND ROWNUM < 2";
+            PreparedStatement preparedStatementUpdate = connection.prepareStatement(updateSQL);
+            preparedStatementUpdate.setLong(1, id);
+            preparedStatementUpdate.setLong(2, 111111);
+            preparedStatementUpdate.setString(3, plane_no);
+            preparedStatementUpdate.executeUpdate();
+
+            //set the values for the object to be returned
+            String selectSQL = "SELECT SEAT_NO FROM SEAT WHERE RESERVED = ?";
+            PreparedStatement preparedStatementSelect = connection.prepareStatement(selectSQL);
+            preparedStatementSelect.setLong(1, id);
+            ResultSet rs = preparedStatementSelect.executeQuery();
+            String seat_no = "";
+            while (rs.next()) {
+                seat_no = rs.getString("SEAT_NO");
+            } 
+            seat.setPlane_no(plane_no);
+            seat.setSeat_no(seat_no);
+            seat.setReserved(id);
+            seat.setBooked_time(111111); //should not be 111111
+        } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
+        return seat;
     }
 }

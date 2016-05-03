@@ -1,21 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package entities;
 
-/**
- *
- * @author mady
- */
 public class Airplane {
 
     private String plane_no;
     private String model;
-    private int seats;
+    private long seats;
 
-    public Airplane(String plane_no, String model, int seats) {
+    public Airplane(String plane_no, String model, long seats) {
         this.plane_no = plane_no;
         this.model = model;
         this.seats = seats;
@@ -37,13 +28,11 @@ public class Airplane {
         this.model = model;
     }
 
-    public int getSeats() {
+    public long getSeats() {
         return seats;
     }
 
-    public void setSeats(int seats) {
+    public void setSeats(long seats) {
         this.seats = seats;
-    }
-
-    
+    } 
 }

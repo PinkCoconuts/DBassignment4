@@ -1,25 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package entities;
 
-/**
- *
- * @author mady
- */
 public class Seat {
     private String plane_no;
     private String seat_no;
-    private int reserved;
-    private int booked;
-    private int booked_time;
+    private long reserved;
+    private long booked;
+    private long booked_time;
 
     public Seat() {
     }
 
-    public Seat(String plane_no, String seat_no, int reserved, int booked, int booked_time) {
+    public Seat(String plane_no, String seat_no, long reserved, long booked, long booked_time) {
         this.plane_no = plane_no;
         this.seat_no = seat_no;
         this.reserved = reserved;
@@ -43,27 +34,27 @@ public class Seat {
         this.seat_no = seat_no;
     }
 
-    public int getReserved() {
+    public long getReserved() {
         return reserved;
     }
 
-    public void setReserved(int reserved) {
+    public void setReserved(long reserved) {
         this.reserved = reserved;
     }
 
-    public int getBooked() {
+    public long getBooked() {
         return booked;
     }
 
-    public void setBooked(int booked) {
+    public void setBooked(long booked) {
         this.booked = booked;
     }
 
-    public int getBooked_time() {
+    public long getBooked_time() {
         return booked_time;
     }
 
-    public void setBooked_time(int booked_time) {
+    public void setBooked_time(long booked_time) {
         this.booked_time = booked_time;
     }
     
