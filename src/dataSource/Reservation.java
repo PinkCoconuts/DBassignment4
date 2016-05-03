@@ -60,6 +60,10 @@ public class Reservation {
             seat.setSeat_no(seat_no);
             seat.setReserved(id);
             seat.setBooked_time(111111); //should not be 111111
+            if(seat_no.equals("")){
+                System.out.println("Null seat number. Could not find seat");
+                return null;
+            }
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
         }
