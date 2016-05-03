@@ -158,8 +158,30 @@ public class Reservation {
             long booked = 0;
             while (rs.next()) {
                 booked = rs.getLong("BOOKED");
-                if(!(booked> 0)) //in case it is not booked, the attribute "booked" can be either null or 0
+                if (!(booked > 0)) //in case it is not booked, the attribute "booked" can be either null or 0
+                {
                     return false;
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println(ex);
+        }
+        return true;
+    }
+
+    public boolean isAllReserved(String plane_no) {
+        try {
+            String selectSQL = "SELECT RESERVED FROM SEAT WHERE PLANE_NO = ?";
+            PreparedStatement preparedStatementSelect = connection.prepareStatement(selectSQL);
+            preparedStatementSelect.setString(1, plane_no);
+            ResultSet rs = preparedStatementSelect.executeQuery();
+            long reserved = 0;
+            while (rs.next()) {
+                reserved = rs.getLong("RESERVED");
+                if (!(reserved > 0)) //in case it is not booked, the attribute "booked" can be either null or 0
+                {
+                    return false;
+                }
             }
         } catch (SQLException ex) {
             System.out.println(ex);
