@@ -131,6 +131,21 @@ public class Reservation {
         } catch (SQLException ex) {
             System.out.println(ex);
         }
+    }
 
+    public void clearAllBookings(String plane_no) {
+        try {
+            String updateSQL = "UPDATE SEAT "
+                    + "SET BOOKED= ? "
+                    + ", RESERVED= ? "
+                    + "WHERE PLANE_NO= ?";
+            PreparedStatement preparedStatementUpdate = connection.prepareStatement(updateSQL);
+            preparedStatementUpdate.setLong(1, 0);
+            preparedStatementUpdate.setLong(2, 0);
+            preparedStatementUpdate.setString(3, plane_no);
+            preparedStatementUpdate.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println(ex);
+        }
     }
 }
