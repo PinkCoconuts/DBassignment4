@@ -1,0 +1,76 @@
+May 04, 2016 3:32:01 PM utilities.PerformanceLogger initLogger
+INFO: ***** NEW SESSION *****
+May 04, 2016 3:32:01 PM utilities.PerformanceLogger initLogger
+INFO: chillMaster Logger started!
+
+May 04, 2016 3:32:02 PM utilities.DatabaseConnector getConnection
+INFO: Connection with database established successfully!
+May 04, 2016 3:32:02 PM controller.Controller initializeConnection
+INFO: Connection with database initialized
+May 04, 2016 3:36:50 PM utilities.PerformanceLogger initLogger
+INFO: ***** NEW SESSION *****
+May 04, 2016 3:36:50 PM utilities.PerformanceLogger initLogger
+INFO: chillMaster Logger started!
+
+May 04, 2016 3:36:50 PM utilities.DatabaseConnector getConnection
+INFO: Connection with database established successfully!
+May 04, 2016 3:36:50 PM controller.Controller initializeConnection
+INFO: Connection with database initialized
+May 04, 2016 3:36:50 PM utilities.DatabaseConnector closeConnection
+INFO: Connection with database closed successfully!
+May 04, 2016 3:45:54 PM utilities.PerformanceLogger initLogger
+INFO: ***** NEW SESSION *****
+May 04, 2016 3:45:54 PM utilities.PerformanceLogger initLogger
+INFO: chillMaster Logger started!
+
+May 04, 2016 3:45:55 PM utilities.DatabaseConnector getConnection
+INFO: Connection with database established successfully!
+May 04, 2016 3:45:55 PM controller.Controller initializeConnection
+INFO: Connection with database initialized
+May 04, 2016 3:45:55 PM utilities.DatabaseConnector closeConnection
+INFO: Connection with database closed successfully!
+May 04, 2016 4:02:04 PM utilities.PerformanceLogger initLogger
+INFO: ***** NEW SESSION *****
+May 04, 2016 4:02:04 PM utilities.PerformanceLogger initLogger
+INFO: chillMaster Logger started!
+
+May 04, 2016 4:02:04 PM utilities.DatabaseConnector getConnection
+INFO: Connection with database established successfully!
+May 04, 2016 4:02:04 PM controller.Controller initializeConnection
+INFO: Connection with database initialized
+May 04, 2016 4:02:05 PM utilities.DatabaseConnector closeConnection
+INFO: Connection with database closed successfully!
+May 04, 2016 4:10:50 PM utilities.PerformanceLogger initLogger
+INFO: ***** NEW SESSION *****
+May 04, 2016 4:10:51 PM utilities.PerformanceLogger initLogger
+INFO: chillMaster Logger started!
+
+May 04, 2016 4:10:51 PM utilities.DatabaseConnector getConnection
+INFO: Connection with database established successfully!
+May 04, 2016 4:10:51 PM controller.Controller initializeConnection
+INFO: Connection with database initialized
+May 04, 2016 4:10:51 PM dataSource.ReservationMapper reserve
+INFO: Successfully reserved a free seat in plane CR9 for customer 1200
+May 04, 2016 4:10:51 PM dataSource.ReservationMapper getSeat
+INFO: Successfully selected a seat with seat number : A1
+May 04, 2016 4:10:51 PM utilities.DatabaseConnector closeConnection
+INFO: Connection with database closed successfully!
+May 04, 2016 4:12:31 PM utilities.PerformanceLogger initLogger
+INFO: ***** NEW SESSION *****
+May 04, 2016 4:12:31 PM utilities.PerformanceLogger initLogger
+INFO: chillMaster Logger started!
+
+May 04, 2016 4:12:31 PM utilities.DatabaseConnector getConnection
+INFO: Connection with database established successfully!
+May 04, 2016 4:12:31 PM controller.Controller initializeConnection
+INFO: Connection with database initialized
+May 04, 2016 4:12:31 PM dataSource.ReservationMapper reserve
+INFO: Successfully reserved a free seat in plane CR9 for customer 1200
+May 04, 2016 4:12:31 PM dataSource.ReservationMapper getSeat
+INFO: Successfully selected a seat with seat number : A1
+May 04, 2016 4:12:32 PM dataSource.ReservationMapper reserve
+INFO: Successfully reserved a free seat in plane CR9 for customer 1350
+May 04, 2016 4:12:32 PM dataSource.ReservationMapper getSeat
+INFO: Successfully selected a seat with seat number : A10
+May 04, 2016 4:12:32 PM utilities.DatabaseConnector closeConnection
+INFO: Connection with database closed successfully!
