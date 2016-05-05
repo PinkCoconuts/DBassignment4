@@ -17,11 +17,8 @@ public class ReservationMapper {
         PreparedStatement preparedStatement = null;
         try {
             String updateSQL = "UPDATE SEAT "
-                    + "SET RESERVED= ? "
-                    + ", BOOKING_TIME= ? " //should not be 111111
-                    + "WHERE PLANE_NO= ? "
-                    + "AND RESERVED IS NULL "
-                    + "AND ROWNUM < 2";
+                    + "SET RESERVED= ? , BOOKING_TIME= ? "
+                    + "WHERE PLANE_NO= ? AND RESERVED IS NULL AND ROWNUM = 1";
 
             preparedStatement = connection.prepareStatement( updateSQL );
 
@@ -46,6 +43,25 @@ public class ReservationMapper {
         }
         logger.info( "Successfully reserved a free seat in plane " + planeId + " for customer " + customerId );
         return getSeat( connection, logger, planeId, customerId );
+    }
+
+    private void lockSeatTBL( Connection connection, Logger logger ) {
+        Statement statement = null;
+        String lock = "LOCK TABLE SEAT in exclusive mode";
+
+        try {
+            statement = connection.createStatement();
+            statement.execute( lock );
+        } catch ( SQLException e ) {
+            logger.severe( "Error : lockSeatTBL() SQLException : " + e.getMessage() );
+        } finally {
+            try {
+                statement.close();
+            } catch ( SQLException e ) {
+                logger.warning( "Error : lockSeatTBL() PreparedStatement was not closed "
+                        + "successfully : " + e.getMessage() );
+            }
+        }
     }
 
     public Seat getSeat( Connection connection, Logger logger, String plane_no, long id ) {

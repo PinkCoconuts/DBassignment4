@@ -12,7 +12,7 @@ public class Tester {
         controller.initializeConnection( logger );
 
         //Test functionality here
-        controller.reserveSeat( "CR9", 1200 );
+        controller.reserveSeat( "CR9", 1201 );
 
         //Sleep for 1 sec (acts like a lock)
         try {
@@ -21,7 +21,7 @@ public class Tester {
             Logger.getLogger( Tester.class.getName() ).log( Level.SEVERE, null, ex );
         }
 
-        controller.reserveSeat( "CR9", 1350 );
+        controller.reserveSeat( "CR9", 1351 );
 
         controller.closeConnection();
     }
