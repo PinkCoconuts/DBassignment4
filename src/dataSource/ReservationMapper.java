@@ -14,6 +14,15 @@ import utilities.DatabaseConnector;
 public class ReservationMapper {
 
     public Seat reserve( Connection connection, Logger logger, String planeId, long customerId ) {
+        try {
+            connection.setAutoCommit( false );
+        } catch ( SQLException e ) {
+            logger.severe( "Error : reserve() SQLException : Set of auto commit to false failed : " + e );
+        }
+
+        //Returns false always
+        lockSeatTBL( connection, logger );
+
         PreparedStatement preparedStatement = null;
         try {
             String updateSQL = "UPDATE SEAT "
@@ -45,23 +54,27 @@ public class ReservationMapper {
         return getSeat( connection, logger, planeId, customerId );
     }
 
-    private void lockSeatTBL( Connection connection, Logger logger ) {
-        Statement statement = null;
-        String lock = "LOCK TABLE SEAT in exclusive mode";
+    private boolean lockSeatTBL( Connection connection, Logger logger ) {
+        int result = 0;
+        PreparedStatement preparedStatement = null;
+        String SQLString = "LOCK TABLE SEAT in exclusive mode";
 
         try {
-            statement = connection.createStatement();
-            statement.execute( lock );
+
+            preparedStatement = connection.prepareStatement( SQLString );
+            result = preparedStatement.executeUpdate();
         } catch ( SQLException e ) {
             logger.severe( "Error : lockSeatTBL() SQLException : " + e.getMessage() );
         } finally {
             try {
-                statement.close();
+                preparedStatement.close();
             } catch ( SQLException e ) {
                 logger.warning( "Error : lockSeatTBL() PreparedStatement was not closed "
                         + "successfully : " + e.getMessage() );
             }
         }
+        System.out.println( "Was locked ? " + (result == 1) );
+        return result == 1;
     }
 
     public Seat getSeat( Connection connection, Logger logger, String plane_no, long id ) {
@@ -86,6 +99,7 @@ public class ReservationMapper {
                 //seat.setBooked_time( 111111 );
             }
 
+            connection.commit();
         } catch ( SQLException e ) {
             logger.severe( "Error : getSeat() SQLException : " + e.getMessage() );
         } finally {
@@ -98,6 +112,7 @@ public class ReservationMapper {
                         + "successfully : " + e );
             }
         }
+
         logger.info( "Successfully selected a seat with seat number : " + seat.getSeat_no() );
         return seat;
     }
