@@ -62,14 +62,6 @@ public class DatabaseConnector {
             } else {
                 System.out.println( "Connection with database established successfully!" );
             }
-
-//            try {
-//                connection.setAutoCommit( true );
-//                // termination by the garbage collector
-//            } catch ( SQLException ex ) {
-//                logger.severe( "SQL Exception while trying to connect to db " + ex );
-//                return null;
-//            }
             
             return connection;
         }

@@ -1,6 +1,6 @@
 package controller;
 
-import dataSource.ReservationMapper;
+import dataSource.Reservation;
 import entities.Seat;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -25,23 +25,19 @@ public class Controller {
     private static String[] databasePassword = { "qwerty12345", "cphbs96" };
 
     //Mappers
-    private static ReservationMapper reservationMapper;
+    private static Reservation reservationMapper;
 
     public Controller() {
         //Logger functionality
         performanceLogger = new PerformanceLogger();
         logger = performanceLogger.initLogger( loggerName, loggerPath );
 
-        databaseConnector = new DatabaseConnector( databaseHost[ 0 ], databaseUsername[ 0 ], databasePassword[ 0 ], null );
+        databaseConnector = new DatabaseConnector( databaseHost[ 1 ], databaseUsername[ 1 ], databasePassword[ 1 ], null );
 
-        reservationMapper = new ReservationMapper();
+        reservationMapper = new Reservation();
     }
 
-    public Logger getLogger() {
-        return logger;
-    }
-
-    public Boolean initializeConnection( Logger logger ) {
+    public Boolean initializeConnection() {
         if ( connection != null ) {
             System.out.println( "Connection already existing" );
             logger.info( "Connection with database is already existing!" );
