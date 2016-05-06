@@ -16,7 +16,7 @@ import utilities.DatabaseConnector;
 
 public class Reservation implements ReservationInterface {
 
-    private long MAX_DURATION = MILLISECONDS.convert( 30, SECONDS );
+    private long MAX_DURATION = MILLISECONDS.convert( 5, SECONDS );
 
     @Override
     public void Reservation( String user, String pw ) {

@@ -14,7 +14,7 @@ public class Tester {
         controller.initializeConnection();
 
         //Core methods test sequence
-        //controller.reserveSeat( planeID, 1333 );
+        controller.reserveSeat( planeID, 3535 );
         //controller.reserveSeat( planeID, 1400 );
         //controller.bookSeat( planeID, "A1", 1400 );
         
@@ -29,7 +29,7 @@ public class Tester {
         //controller.areAllSeatsReserved( planeID );
         
         //Test core methods with full db
-        controller.bookAllSeats( planeID );
+        //controller.bookAllSeats( planeID );
         //controller.reserveSeat( planeID, 1400 );
         //controller.bookSeat( planeID, "A1", 1400 );
 
