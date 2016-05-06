@@ -1,26 +1,25 @@
 package test;
 
 import controller.Controller;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class Tester {
 
+    private static String planeID = "CR9";
+    
     public static void main( String[] args ) {
+        //init controller
         Controller controller = new Controller();
+
+        //init db connection
         controller.initializeConnection();
 
         //Test functionality here
-        System.out.println( "#1 : " + controller.reserveSeat( "CR9", 1225 ).getSeat_no() );
+        controller.reserveSeat( planeID, 1400 );
+        controller.bookSeat( planeID, "A1", 1400 );
+        
+        //controller.reserveSeat( planeID, 1333 ).getSeat_no();
 
-        //Sleep for 1 sec (acts like a lock)
-//        try {
-//            Thread.sleep( 1000 );
-//        } catch ( InterruptedException ex ) {
-//            Logger.getLogger( Tester.class.getName() ).log( Level.SEVERE, null, ex );
-//        }
-        System.out.println( "#2 : " + controller.reserveSeat( "CR9", 1325 ).getSeat_no() );
-
+        //close db conneciton
         controller.closeConnection();
     }
 }

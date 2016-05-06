@@ -57,8 +57,12 @@ public class Controller {
         return true;
     }
 
-    public Seat reserveSeat( String plane_no, long id ) {
-        return reservationMapper.reserve( connection, logger, plane_no, id );
+    public Seat reserveSeat( String planeId, long customerId ) {
+        return reservationMapper.reserve( connection, logger, planeId, customerId );
+    }
+
+    public int bookSeat( String planeId, String seatId, long customerId ) {
+        return reservationMapper.book( connection, logger, planeId, seatId, customerId );
     }
 
     public void closeConnection() {
