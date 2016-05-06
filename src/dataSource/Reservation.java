@@ -280,8 +280,81 @@ public class Reservation implements ReservationInterface {
     }
 
     @Override
-    public boolean bookAll( Connection connection, Logger logger, String plane_no ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+    public boolean bookAll( Connection connection, Logger logger, String planeId ) {
+        try {
+            connection.setAutoCommit( false );
+        } catch ( SQLException e ) {
+            logger.severe( "Error : bookAll() SQLException : Set of auto commit to "
+                    + "false failed : " + e );
+            return false;
+        }
+
+        try {
+            String selectSQL = "SELECT SEAT_NO "
+                    + "FROM SEAT "
+                    + "WHERE PLANE_NO= ? AND BOOKED IS NULL "
+                    + "FOR UPDATE";
+
+            PreparedStatement preparedStatement = connection.prepareStatement( selectSQL );
+
+            preparedStatement.setString( 1, planeId );
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            String seatId;
+            int reservationId = 0;
+            while ( rs.next() ) {
+
+                seatId = rs.getString( "SEAT_NO" );
+
+                preparedStatement = null;
+
+                Date date = new Date();
+
+                try {
+                    reservationId++;
+                    String updateSQL = "UPDATE SEAT "
+                            + "SET RESERVED= ?, BOOKED= ?, BOOKING_TIME= ? "
+                            + "WHERE PLANE_NO= ? AND SEAT_NO= ?";
+
+                    preparedStatement = connection.prepareStatement( updateSQL );
+
+                    preparedStatement.setInt( 1, reservationId );
+                    preparedStatement.setInt( 2, reservationId );
+                    preparedStatement.setLong( 3, date.getTime() );
+                    preparedStatement.setString( 4, planeId );
+                    preparedStatement.setString( 5, seatId );
+
+                    preparedStatement.executeUpdate();
+                } catch ( SQLException e ) {
+                    logger.severe( "Error : bookAll() SQLException on update: "
+                            + e.getMessage() );
+                    return false;
+                } finally {
+                    try {
+                        if ( preparedStatement != null ) {
+                            preparedStatement.close();
+                        }
+                    } catch ( SQLException e ) {
+                        //Not fatal, do not return
+                        logger.warning( "Error : bookAll() PreparedStatement was "
+                                + "not closed successfully on update : " + e );
+
+                    }
+                }
+                logger.info( "bookAll() Successfully booked a seat " + seatId + " in plane " + planeId );
+            }
+            /*
+             * The seat is succesfully booked
+             */
+            logger.info( "bookAll() Successfully booked all free seats" );
+            connection.commit();
+            return true;
+        } catch ( SQLException e ) {
+            logger.severe( "Error : bookAll() SQLException on select for update: "
+                    + e.getMessage() );
+            return false;
+        }
     }
 
     @Override
