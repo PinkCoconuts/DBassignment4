@@ -100,13 +100,18 @@ public class Reservation implements ReservationInterface {
 
                 connection.commit();
                 return seat;
+            } else {
+                logger.severe( "Error : reserve() Cannot reserver a seat for customer "
+                        + customerId + " for PLANE_NO= " + planeId + " because the "
+                        + "seat was already booked/reserved" );
+                connection.commit();
+                return null;
             }
         } catch ( SQLException e ) {
             logger.severe( "Error : getSeat() SQLException on select for update: "
                     + e.getMessage() );
             return null;
         }
-        return null;
     }
 
     @Override
@@ -344,6 +349,11 @@ public class Reservation implements ReservationInterface {
                 }
                 logger.info( "bookAll() Successfully booked a seat " + seatId
                         + " in plane " + planeId );
+            }
+
+            if ( reservationId == 0 ) {
+                logger.info( "All seats were already booked." );
+                return true;
             }
             /*
              * The seat is succesfully booked

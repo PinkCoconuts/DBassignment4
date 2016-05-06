@@ -27,6 +27,11 @@ public class Tester {
         //controller.clearAllBookings( planeID );
         //controller.areAllSeatsBooked( planeID );
         //controller.areAllSeatsReserved( planeID );
+        
+        //Test core methods with full db
+        controller.bookAllSeats( planeID );
+        //controller.reserveSeat( planeID, 1400 );
+        //controller.bookSeat( planeID, "A1", 1400 );
 
         //close db conneciton
         controller.closeConnection();
