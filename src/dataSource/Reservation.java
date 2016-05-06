@@ -358,37 +358,80 @@ public class Reservation implements ReservationInterface {
     }
 
     @Override
-    public boolean clearAllBookings( Connection connection, Logger logger, String plane_no ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
+    public boolean clearAllBookings( Connection connection, Logger logger, String planeId ) {
+        try {
+            connection.setAutoCommit( false );
+        } catch ( SQLException e ) {
+            logger.severe( "Error : clearAllBookings() SQLException : Set of auto commit to "
+                    + "false failed : " + e );
+            return false;
+        }
 
-    @Override
-    public boolean isAllBooked( Connection connection, Logger logger, String plane_no ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
+        try {
+            String selectSQL = "SELECT SEAT_NO "
+                    + "FROM SEAT "
+                    + "WHERE ( PLANE_NO= ? AND BOOKED IS NOT NULL ) "
+                    + "OR ( PLANE_NO= ? AND RESERVED IS NOT NULL ) "
+                    + "FOR UPDATE";
 
-    @Override
-    public boolean isAllReserved( Connection connection, Logger logger, String plane_no ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
+            PreparedStatement preparedStatement = connection.prepareStatement( selectSQL );
 
-//    public void bookAll( String plane_no ) {
-//        try {
-//            String updateSQL = "UPDATE SEAT "
-//                    + "SET BOOKED= ? "
-//                    + "WHERE PLANE_NO= ? "
-//                    + "AND RESERVED IS NULL "
-//                    + "AND BOOKED IS NULL";
-//            PreparedStatement preparedStatementUpdate = connection.prepareStatement( updateSQL );
-//            preparedStatementUpdate.setLong( 1, 999999 );
-//            preparedStatementUpdate.setString( 2, plane_no );
-//            preparedStatementUpdate.executeUpdate();
-//        } catch ( SQLException ex ) {
-//            System.out.println( ex );
-//        }
-//    }
-//
-//    public void clearAllBookings( String plane_no ) {
+            preparedStatement.setString( 1, planeId );
+            preparedStatement.setString( 2, planeId );
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            String seatId;
+            while ( rs.next() ) {
+
+                seatId = rs.getString( "SEAT_NO" );
+
+                preparedStatement = null;
+
+                try {
+                    String updateSQL = "UPDATE SEAT "
+                            + "SET RESERVED= ?, BOOKED= ?, BOOKING_TIME= ? "
+                            + "WHERE PLANE_NO= ? AND SEAT_NO= ?";
+
+                    preparedStatement = connection.prepareStatement( updateSQL );
+
+                    preparedStatement.setNull( 1, java.sql.Types.INTEGER );
+                    preparedStatement.setNull( 2, java.sql.Types.INTEGER );
+                    preparedStatement.setNull( 3, java.sql.Types.INTEGER );
+                    preparedStatement.setString( 4, planeId );
+                    preparedStatement.setString( 5, seatId );
+
+                    preparedStatement.executeUpdate();
+                } catch ( SQLException e ) {
+                    logger.severe( "Error : clearAllBookings() SQLException on update: "
+                            + e.getMessage() );
+                    return false;
+                } finally {
+                    try {
+                        if ( preparedStatement != null ) {
+                            preparedStatement.close();
+                        }
+                    } catch ( SQLException e ) {
+                        //Not fatal, do not return
+                        logger.warning( "Error : clearAllBookings() PreparedStatement was "
+                                + "not closed successfully on update : " + e );
+
+                    }
+                }
+                logger.info( "clearAllBookings() Successfully unbooked/unregistered a seat " + seatId + " in plane " + planeId );
+            }
+            /*
+             * The seat is succesfully booked
+             */
+            logger.info( "clearAllBookings() Successfully unbooked/unregistered all free seats" );
+            connection.commit();
+            return true;
+        } catch ( SQLException e ) {
+            logger.severe( "Error : clearAllBookings() SQLException on select for update: "
+                    + e.getMessage() );
+            return false;
+        }
+
 //        try {
 //            String updateSQL = "UPDATE SEAT "
 //                    + "SET BOOKED= ? "
@@ -402,6 +445,20 @@ public class Reservation implements ReservationInterface {
 //        } catch ( SQLException ex ) {
 //            System.out.println( ex );
 //        }
+    }
+
+    @Override
+    public boolean isAllBooked( Connection connection, Logger logger, String plane_no ) {
+        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean isAllReserved( Connection connection, Logger logger, String plane_no ) {
+        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+    }
+
+//
+//    public void clearAllBookings( String plane_no ) {
 //    }
 //
 //    public boolean isAllBooked( String plane_no ) {

@@ -69,6 +69,10 @@ public class Controller {
         return reservationMapper.bookAll( connection, logger, planeId );
     }
 
+    public boolean clearAllBookings( String planeId ) {
+        return reservationMapper.clearAllBookings( connection, logger, planeId );
+    }
+
     public void closeConnection() {
         databaseConnector.closeConnection( connection, logger );
     }

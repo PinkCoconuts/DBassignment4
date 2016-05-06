@@ -17,7 +17,8 @@ public class Tester {
         //controller.reserveSeat( planeID, 1333 );
         //controller.reserveSeat( planeID, 1400 );
         //controller.bookSeat( planeID, "A1", 1400 );
-        controller.bookAllSeats( planeID );
+        //controller.bookAllSeats( planeID );
+        controller.clearAllBookings( planeID );
 
         //close db conneciton
         controller.closeConnection();
