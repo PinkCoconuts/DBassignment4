@@ -342,7 +342,8 @@ public class Reservation implements ReservationInterface {
 
                     }
                 }
-                logger.info( "bookAll() Successfully booked a seat " + seatId + " in plane " + planeId );
+                logger.info( "bookAll() Successfully booked a seat " + seatId
+                        + " in plane " + planeId );
             }
             /*
              * The seat is succesfully booked
@@ -358,12 +359,13 @@ public class Reservation implements ReservationInterface {
     }
 
     @Override
-    public boolean clearAllBookings( Connection connection, Logger logger, String planeId ) {
+    public boolean clearAllBookings( Connection connection, Logger logger,
+            String planeId ) {
         try {
             connection.setAutoCommit( false );
         } catch ( SQLException e ) {
-            logger.severe( "Error : clearAllBookings() SQLException : Set of auto commit to "
-                    + "false failed : " + e );
+            logger.severe( "Error : clearAllBookings() SQLException : Set of auto "
+                    + "commit to false failed : " + e );
             return false;
         }
 
@@ -413,43 +415,65 @@ public class Reservation implements ReservationInterface {
                         }
                     } catch ( SQLException e ) {
                         //Not fatal, do not return
-                        logger.warning( "Error : clearAllBookings() PreparedStatement was "
-                                + "not closed successfully on update : " + e );
+                        logger.warning( "Error : clearAllBookings() PreparedStatement "
+                                + "was not closed successfully on update : " + e );
 
                     }
                 }
-                logger.info( "clearAllBookings() Successfully unbooked/unregistered a seat " + seatId + " in plane " + planeId );
+                logger.info( "clearAllBookings() Successfully unbooked/unregistered "
+                        + "a seat " + seatId + " in plane " + planeId );
             }
             /*
              * The seat is succesfully booked
              */
-            logger.info( "clearAllBookings() Successfully unbooked/unregistered all free seats" );
+            logger.info( "clearAllBookings() Successfully unbooked/unregistered "
+                    + "all free seats" );
             connection.commit();
             return true;
         } catch ( SQLException e ) {
-            logger.severe( "Error : clearAllBookings() SQLException on select for update: "
-                    + e.getMessage() );
+            logger.severe( "Error : clearAllBookings() SQLException on select for "
+                    + "update: " + e.getMessage() );
             return false;
         }
-
-//        try {
-//            String updateSQL = "UPDATE SEAT "
-//                    + "SET BOOKED= ? "
-//                    + ", RESERVED= ? "
-//                    + "WHERE PLANE_NO= ?";
-//            PreparedStatement preparedStatementUpdate = connection.prepareStatement( updateSQL );
-//            preparedStatementUpdate.setLong( 1, 0 );
-//            preparedStatementUpdate.setLong( 2, 0 );
-//            preparedStatementUpdate.setString( 3, plane_no );
-//            preparedStatementUpdate.executeUpdate();
-//        } catch ( SQLException ex ) {
-//            System.out.println( ex );
-//        }
     }
 
     @Override
-    public boolean isAllBooked( Connection connection, Logger logger, String plane_no ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
+    public boolean isAllBooked( Connection connection, Logger logger, String planeId ) {
+        PreparedStatement preparedStatement = null;
+        try {
+            String selectSQL = "SELECT BOOKED FROM SEAT WHERE PLANE_NO = ?";
+
+            preparedStatement = connection.prepareStatement( selectSQL );
+
+            preparedStatement.setString( 1, planeId );
+
+            ResultSet rs = preparedStatement.executeQuery();
+            int booked = 0;
+            while ( rs.next() ) {
+                booked = rs.getInt( "BOOKED" );
+                if ( booked <= 0 ) {
+                    logger.info( "isAllBooked() Reports that NOT all seats are booked." );
+                    return false;
+                }
+            }
+        } catch ( SQLException e ) {
+            logger.severe( "Error : isAllBooked() SQLException on selection of "
+                    + "booked seats: " + e.getMessage() );
+            return false;
+        } finally {
+            try {
+                if ( preparedStatement != null ) {
+                    preparedStatement.close();
+                }
+            } catch ( SQLException e ) {
+                //Not fatal, do not return
+                logger.warning( "Error : isAllBooked() PreparedStatement was "
+                        + "not closed successfully on update : " + e );
+
+            }
+        }
+        logger.info( "isAllBooked() Reports that all seats are booked." );
+        return true;
     }
 
     @Override
@@ -457,29 +481,6 @@ public class Reservation implements ReservationInterface {
         throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
     }
 
-//
-//    public void clearAllBookings( String plane_no ) {
-//    }
-//
-//    public boolean isAllBooked( String plane_no ) {
-//        try {
-//            String selectSQL = "SELECT BOOKED FROM SEAT WHERE PLANE_NO = ?";
-//            PreparedStatement preparedStatementSelect = connection.prepareStatement( selectSQL );
-//            preparedStatementSelect.setString( 1, plane_no );
-//            ResultSet rs = preparedStatementSelect.executeQuery();
-//            long booked = 0;
-//            while ( rs.next() ) {
-//                booked = rs.getLong( "BOOKED" );
-//                if ( !(booked > 0) ) //in case it is not booked, the attribute "booked" can be either null or 0
-//                {
-//                    return false;
-//                }
-//            }
-//        } catch ( SQLException ex ) {
-//            System.out.println( ex );
-//        }
-//        return true;
-//    }
 //
 //    public boolean isAllReserved( String plane_no ) {
 //        try {
