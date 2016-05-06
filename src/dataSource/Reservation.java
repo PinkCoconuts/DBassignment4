@@ -477,28 +477,41 @@ public class Reservation implements ReservationInterface {
     }
 
     @Override
-    public boolean isAllReserved( Connection connection, Logger logger, String plane_no ) {
-        throw new UnsupportedOperationException( "Not supported yet." ); //To change body of generated methods, choose Tools | Templates.
-    }
+    public boolean isAllReserved( Connection connection, Logger logger, String planeId ) {
+        PreparedStatement preparedStatement = null;
+        try {
+            String selectSQL = "SELECT RESERVED FROM SEAT WHERE PLANE_NO = ?";
 
-//
-//    public boolean isAllReserved( String plane_no ) {
-//        try {
-//            String selectSQL = "SELECT RESERVED FROM SEAT WHERE PLANE_NO = ?";
-//            PreparedStatement preparedStatementSelect = connection.prepareStatement( selectSQL );
-//            preparedStatementSelect.setString( 1, plane_no );
-//            ResultSet rs = preparedStatementSelect.executeQuery();
-//            long reserved = 0;
-//            while ( rs.next() ) {
-//                reserved = rs.getLong( "RESERVED" );
-//                if ( !(reserved > 0) ) //in case it is not booked, the attribute "booked" can be either null or 0
-//                {
-//                    return false;
-//                }
-//            }
-//        } catch ( SQLException ex ) {
-//            System.out.println( ex );
-//        }
-//        return true;
-//    }
+            preparedStatement = connection.prepareStatement( selectSQL );
+
+            preparedStatement.setString( 1, planeId );
+
+            ResultSet rs = preparedStatement.executeQuery();
+            int reserved = 0;
+            while ( rs.next() ) {
+                reserved = rs.getInt( "RESERVED" );
+                if ( reserved <= 0 ) {
+                    logger.info( "isAllReserved() Reports that NOT all seats are reserved." );
+                    return false;
+                }
+            }
+        } catch ( SQLException e ) {
+            logger.severe( "Error : isAllReserved() SQLException on selection of "
+                    + "reserved seats: " + e.getMessage() );
+            return false;
+        } finally {
+            try {
+                if ( preparedStatement != null ) {
+                    preparedStatement.close();
+                }
+            } catch ( SQLException e ) {
+                //Not fatal, do not return
+                logger.warning( "Error : isAllReserved() PreparedStatement was "
+                        + "not closed successfully on update : " + e );
+
+            }
+        }
+        logger.info( "isAllReserved() Reports that all seats are reserved." );
+        return true;
+    }
 }

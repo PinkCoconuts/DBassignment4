@@ -72,9 +72,13 @@ public class Controller {
     public boolean clearAllBookings( String planeId ) {
         return reservationMapper.clearAllBookings( connection, logger, planeId );
     }
-    
+
     public boolean areAllSeatsBooked( String planeId ) {
         return reservationMapper.isAllBooked( connection, logger, planeId );
+    }
+
+    public boolean areAllSeatsReserved( String planeId ) {
+        return reservationMapper.isAllReserved( connection, logger, planeId );
     }
 
     public void closeConnection() {

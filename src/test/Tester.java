@@ -13,15 +13,20 @@ public class Tester {
         //init db connection
         controller.initializeConnection();
 
-        //Test functionality here
+        //Core methods test sequence
         //controller.reserveSeat( planeID, 1333 );
         //controller.reserveSeat( planeID, 1400 );
         //controller.bookSeat( planeID, "A1", 1400 );
+        
+        //Helper methods test sequence
         //controller.areAllSeatsBooked( planeID );
+        //controller.areAllSeatsReserved( planeID );
         //controller.bookAllSeats( planeID );
         //controller.areAllSeatsBooked( planeID );
+        //controller.areAllSeatsReserved( planeID );
         //controller.clearAllBookings( planeID );
         //controller.areAllSeatsBooked( planeID );
+        //controller.areAllSeatsReserved( planeID );
 
         //close db conneciton
         controller.closeConnection();
