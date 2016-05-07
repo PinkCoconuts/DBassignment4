@@ -28,6 +28,8 @@ public class Reservation implements ReservationInterface {
     @Override
     public Seat reserve( Connection connection, Logger logger, String planeId,
             long customerId ) {
+        boolean isAllReserved = false;
+
         try {
             connection.setAutoCommit( false );
         } catch ( SQLException e ) {
@@ -40,30 +42,34 @@ public class Reservation implements ReservationInterface {
         PreparedStatement preparedStatement = null;
 
         try {
-
+            Date date = new Date();
             /*
              * SELECT ... FOR UPDATE Query, which select a row in a table and locks
              * the specific role until a commit. Works only if AutoCommit is set
              * to false.
              */
             String selectSQL = "SELECT SEAT_NO FROM SEAT "
-                    + "WHERE ROWNUM = 1 AND RESERVED IS NULL "
+                    + "WHERE ( ROWNUM = 1 AND RESERVED IS NULL ) "
+                    + "OR ( ROWNUM = 1 AND RESERVED IS NOT NULL AND BOOKED IS NULL AND ( ? - BOOKING_TIME ) > ( ? ) ) "
                     + "FOR UPDATE";
 
             preparedStatement = connection.prepareStatement( selectSQL );
+
+            preparedStatement.setLong( 1, date.getTime() );
+            preparedStatement.setLong( 2, MAX_DURATION );
 
             ResultSet rs = preparedStatement.executeQuery();
 
             if ( rs.next() ) {
 
-                Date date = new Date();
+                date = new Date();
                 seat.setSeat_no( rs.getString( "SEAT_NO" ) );
                 seat.setPlane_no( planeId );
                 seat.setReserved( customerId );
                 seat.setBooked_time( date.getTime() );
 
-                logger.info( "Successfully selected for update a seat with seat "
-                        + "number : " + seat.getSeat_no() );
+                //logger.info( "Successfully selected for update a seat with seat "
+                //        + "number : " + seat.getSeat_no() );
                 try {
 
                     String updateSQL = "UPDATE SEAT "
@@ -95,23 +101,100 @@ public class Reservation implements ReservationInterface {
 
                     }
                 }
-                logger.info( "Successfully reserved a free seat in plane " + planeId
-                        + " for customer " + customerId );
+                //logger.info( "Successfully reserved a free seat in plane " + planeId
+                //        + " for customer " + customerId );
 
                 connection.commit();
                 return seat;
             } else {
+                //If all reserved but not all booked
+                isAllReserved = true;
                 logger.severe( "Error : reserve() Cannot reserver a seat for customer "
                         + customerId + " for PLANE_NO= " + planeId + " because the "
                         + "seat was already booked/reserved" );
-                connection.commit();
-                return null;
             }
         } catch ( SQLException e ) {
-            logger.severe( "Error : getSeat() SQLException on select for update: "
+            logger.severe( "Error : reserve() SQLException on select for update: "
                     + e.getMessage() );
             return null;
         }
+
+        if ( isAllReserved ) {
+            try {
+                String selectSQL = "SELECT SEAT_NO, RESERVED, BOOKING_TIME FROM SEAT "
+                        + "WHERE RESERVED IS NOT NULL AND BOOKED IS NULL "
+                        + "FOR UPDATE";
+
+                preparedStatement = connection.prepareStatement( selectSQL );
+
+                ResultSet rs = preparedStatement.executeQuery();
+
+                while ( rs.next() ) {
+
+                    Date date = new Date();
+                    seat.setSeat_no( rs.getString( "SEAT_NO" ) );
+                    seat.setReserved( rs.getInt( "RESERVED" ) );
+                    seat.setBooked_time( rs.getLong( "BOOKING_TIME" ) );
+
+                    if ( MAX_DURATION < date.getTime() - seat.getBooked_time() ) {
+                        logger.severe( "Error : reservation() Reservation expired." );
+
+                        preparedStatement = null;
+                        try {
+                            String updateSQL = "UPDATE SEAT "
+                                    + "SET BOOKED = ?, RESERVED = ?, BOOKING_TIME = ? "
+                                    + "WHERE PLANE_NO = ? AND SEAT_NO = ? AND RESERVED = ?";
+
+                            preparedStatement = connection.prepareStatement( updateSQL );
+
+                            preparedStatement.setNull( 1, java.sql.Types.INTEGER );
+                            preparedStatement.setNull( 2, java.sql.Types.INTEGER );
+                            preparedStatement.setNull( 3, java.sql.Types.INTEGER );
+                            preparedStatement.setString( 4, planeId );
+                            preparedStatement.setString( 5, seat.getSeat_no() );
+                            preparedStatement.setLong( 6, seat.getReserved() );
+
+                            preparedStatement.executeUpdate();
+                        } catch ( SQLException e ) {
+                            logger.severe( "Error : reserveTOFLUSH() SQLException on update on "
+                                    + " clearing reservation because of reservation "
+                                    + "timeout: " + e.getMessage() );
+                            return null;
+                        } finally {
+                            try {
+                                if ( preparedStatement != null ) {
+                                    preparedStatement.close();
+                                }
+                            } catch ( SQLException e ) {
+                                //Not fatal, do not return
+                                logger.warning( "Error : reserveTOFLUSH() PreparedStatement was "
+                                        + "not closed successfully on clear reservation "
+                                        + "because of reservation timeout : " + e );
+                            }
+                        }
+                    }
+                }
+
+                connection.commit();
+                return null;
+            } catch ( SQLException e ) {
+                logger.severe( "Error : reserveTOFLUSH() SQLException on select for update: "
+                        + e.getMessage() );
+                return null;
+            } finally {
+                try {
+                    if ( preparedStatement != null ) {
+                        preparedStatement.close();
+                    }
+                } catch ( SQLException e ) {
+                    //Not fatal, do not return
+                    logger.warning( "Error : reserveTOFLUSH() PreparedStatement was "
+                            + "not closed successfully on update : " + e );
+
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -173,42 +256,42 @@ public class Reservation implements ReservationInterface {
                  * Reservation timeout, i.e. user was too slow to make a booking
                  */
                 if ( now.getTime() - bookingTime >= MAX_DURATION ) {
-                    logger.severe( "Error : book() Reservation expired." );
-
-                    preparedStatement = null;
-                    try {
-                        String updateSQL = "UPDATE SEAT "
-                                + "SET BOOKED = ?, RESERVED = ?, BOOKING_TIME = ? "
-                                + "WHERE PLANE_NO = ? AND SEAT_NO = ? AND RESERVED = ?";
-
-                        preparedStatement = connection.prepareStatement( updateSQL );
-
-                        preparedStatement.setNull( 1, java.sql.Types.INTEGER );
-                        preparedStatement.setNull( 2, java.sql.Types.INTEGER );
-                        preparedStatement.setNull( 3, java.sql.Types.INTEGER );
-                        preparedStatement.setString( 4, planeId );
-                        preparedStatement.setString( 5, seatId );
-                        preparedStatement.setLong( 6, customerId );
-
-                        preparedStatement.executeUpdate();
-                    } catch ( SQLException e ) {
-                        logger.severe( "Error : book() SQLException on update on "
-                                + " clearing reservation because of reservation "
-                                + "timeout: " + e.getMessage() );
-                        return -5;
-                    } finally {
-                        try {
-                            if ( preparedStatement != null ) {
-                                preparedStatement.close();
-                            }
-                        } catch ( SQLException e ) {
-                            //Not fatal, do not return
-                            logger.warning( "Error : book() PreparedStatement was "
-                                    + "not closed successfully on clear reservation "
-                                    + "because of reservation timeout : " + e );
-                        }
-                    }
-                    logger.info( "Successfully cleared reservation because of "
+//                    logger.severe( "Error : book() Reservation expired." );
+//
+//                    preparedStatement = null;
+//                    try {
+//                        String updateSQL = "UPDATE SEAT "
+//                                + "SET BOOKED = ?, RESERVED = ?, BOOKING_TIME = ? "
+//                                + "WHERE PLANE_NO = ? AND SEAT_NO = ? AND RESERVED = ?";
+//
+//                        preparedStatement = connection.prepareStatement( updateSQL );
+//
+//                        preparedStatement.setNull( 1, java.sql.Types.INTEGER );
+//                        preparedStatement.setNull( 2, java.sql.Types.INTEGER );
+//                        preparedStatement.setNull( 3, java.sql.Types.INTEGER );
+//                        preparedStatement.setString( 4, planeId );
+//                        preparedStatement.setString( 5, seatId );
+//                        preparedStatement.setLong( 6, customerId );
+//
+//                        preparedStatement.executeUpdate();
+//                    } catch ( SQLException e ) {
+//                        logger.severe( "Error : book() SQLException on update on "
+//                                + " clearing reservation because of reservation "
+//                                + "timeout: " + e.getMessage() );
+//                        return -5;
+//                    } finally {
+//                        try {
+//                            if ( preparedStatement != null ) {
+//                                preparedStatement.close();
+//                            }
+//                        } catch ( SQLException e ) {
+//                            //Not fatal, do not return
+//                            logger.warning( "Error : book() PreparedStatement was "
+//                                    + "not closed successfully on clear reservation "
+//                                    + "because of reservation timeout : " + e );
+//                        }
+//                    }
+                    logger.warning( "Successfully cleared reservation because of "
                             + "reservation timeout PLANE_NO= " + planeId + " AND "
                             + "SEAT_NO= " + seatId );
 
@@ -257,8 +340,8 @@ public class Reservation implements ReservationInterface {
 
                         }
                     }
-                    logger.info( "Successfully booked a free seat in plane " + planeId
-                            + " for customer " + customerId );
+                    //logger.info( "Successfully booked a free seat in plane " + planeId
+                    //       + " for customer " + customerId );
 
                     /*
                      * The seat is succesfully booked
@@ -347,18 +430,18 @@ public class Reservation implements ReservationInterface {
 
                     }
                 }
-                logger.info( "bookAll() Successfully booked a seat " + seatId
-                        + " in plane " + planeId );
+                //logger.info( "bookAll() Successfully booked a seat " + seatId
+                //       + " in plane " + planeId );
             }
 
             if ( reservationId == 0 ) {
-                logger.info( "All seats were already booked." );
-                return true;
+                //logger.info( "All seats were already booked." );
+                //return true;
             }
             /*
              * The seat is succesfully booked
              */
-            logger.info( "bookAll() Successfully booked all free seats" );
+            //logger.info( "bookAll() Successfully booked all free seats" );
             connection.commit();
             return true;
         } catch ( SQLException e ) {
@@ -430,14 +513,14 @@ public class Reservation implements ReservationInterface {
 
                     }
                 }
-                logger.info( "clearAllBookings() Successfully unbooked/unregistered "
-                        + "a seat " + seatId + " in plane " + planeId );
+                //logger.info( "clearAllBookings() Successfully unbooked/unregistered "
+                //        + "a seat " + seatId + " in plane " + planeId );
             }
             /*
              * The seat is succesfully booked
              */
-            logger.info( "clearAllBookings() Successfully unbooked/unregistered "
-                    + "all free seats" );
+            //logger.info( "clearAllBookings() Successfully unbooked/unregistered "
+            //        + "all free seats" );
             connection.commit();
             return true;
         } catch ( SQLException e ) {
@@ -462,7 +545,7 @@ public class Reservation implements ReservationInterface {
             while ( rs.next() ) {
                 booked = rs.getInt( "BOOKED" );
                 if ( booked <= 0 ) {
-                    logger.info( "isAllBooked() Reports that NOT all seats are booked." );
+                    //logger.info( "isAllBooked() Reports that NOT all seats are booked." );
                     return false;
                 }
             }
@@ -482,7 +565,7 @@ public class Reservation implements ReservationInterface {
 
             }
         }
-        logger.info( "isAllBooked() Reports that all seats are booked." );
+        //logger.info( "isAllBooked() Reports that all seats are booked." );
         return true;
     }
 
@@ -501,7 +584,7 @@ public class Reservation implements ReservationInterface {
             while ( rs.next() ) {
                 reserved = rs.getInt( "RESERVED" );
                 if ( reserved <= 0 ) {
-                    logger.info( "isAllReserved() Reports that NOT all seats are reserved." );
+                    //logger.info( "isAllReserved() Reports that NOT all seats are reserved." );
                     return false;
                 }
             }
@@ -521,7 +604,7 @@ public class Reservation implements ReservationInterface {
 
             }
         }
-        logger.info( "isAllReserved() Reports that all seats are reserved." );
+        //logger.info( "isAllReserved() Reports that all seats are reserved." );
         return true;
     }
 }

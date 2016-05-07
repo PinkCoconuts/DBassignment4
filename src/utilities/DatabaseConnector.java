@@ -58,7 +58,7 @@ public class DatabaseConnector {
                 return null;
             }
             if ( logger != null ) {
-                logger.info( "Connection with database established successfully!" );
+                //logger.info( "Connection with database established successfully!" );
             } else {
                 System.out.println( "Connection with database established successfully!" );
             }
@@ -82,7 +82,7 @@ public class DatabaseConnector {
                 return false;
             }
             if ( logger != null ) {
-                logger.info( "Connection with database closed successfully!" );
+                //logger.info( "Connection with database closed successfully!\n" );
             } else {
                 System.out.println( "Connection with database closed successfully!" );
             }
@@ -90,7 +90,7 @@ public class DatabaseConnector {
         }
 
         if ( logger != null ) {
-            logger.info( "Connection not initialized, cannot close!" );
+            //logger.info( "Connection not initialized, cannot close!" );
         } else {
             System.out.println( "Connection not initialized, cannot close!" );
         }

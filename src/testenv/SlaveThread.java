@@ -18,7 +18,6 @@ class SlaveThread extends Observable implements Runnable {
     private String planeId;
     private String userThreadName;
     private int userThreadID;
-    private boolean isAlive = true;
 
     //Database Connection
     private DatabaseConnector databaseConnector = null;
@@ -56,7 +55,7 @@ class SlaveThread extends Observable implements Runnable {
     private boolean initializeConnection() {
         if ( connection != null ) {
             System.out.println( "Connection already existing" );
-            logger.info( "Connection with database is already existing!" );
+            //logger.info( "Connection with database is already existing!" );
             return true;
         } else {
             connection = databaseConnector.getConnection( logger );
@@ -81,68 +80,75 @@ class SlaveThread extends Observable implements Runnable {
     }
 
     public void run() {
-        if ( isAlive ) {
 
-            //2. Reserve a seat
-            Seat seat = reservationMapper.reserve( connection, logger, planeId, userThreadID );
-
-            if ( seat == null ) {
-                informMaster( protocol.unsuccessfulReservation );
-            }
-
-            //3. Pause for random number of seconds
-            Random rand = new Random();
-            int secsToSleep = (rand.nextInt( 5 ) + 1);
-            //System.out.println( "Hi, I am " + userThreadID + " and I will sleep for " + secsToSleep + " secs." );
-            try {
-                Thread.sleep( secsToSleep * 1000 );
-            } catch ( InterruptedException ex ) {
-                logger.severe( "Sleep exeption during 'user delay' simulation " + ex );
-                informMaster( protocol.internalError );
-            }
-
-            //4. Choose if book or not
-            int toBook = (rand.nextInt( 3 ) + 1);
-            //System.out.println( "Hi, I am " + userThreadID + " and I rolled " + toBook + " for booking." );
-            if ( toBook >= 3 ) {
-                //System.out.println( "Hi, I am " + userThreadID + " and I will try to book seat :" + seat.getSeat_no() );
-                int responseBook = reservationMapper.book( connection, logger, planeId, seat.getSeat_no(), userThreadID );
-
-                String response = "";
-                switch ( responseBook ) {
-                    case 0:
-                        response = protocol.successfulBooking;
-                        break;
-                    case -1:
-                        response = protocol.unsuccessfulBooking_NotReserved;
-                        break;
-                    case -2:
-                        response = protocol.unsuccessfulBooking_ReservedByAnotherUser;
-                        break;
-                    case -3:
-                        response = protocol.unsuccessfulBooking_Timeout;
-                        break;
-                    case -4:
-                        response = protocol.unsuccessfulBooking_AlreadyBooked;
-                        break;
-                    default:
-                        response = protocol.internalError;
-                        break;
-                }
-
-                informMaster( response );
-            } else {
-                try {
-                    //System.out.println( "Hi, I am " + userThreadID + " and I will NOT try to book seat :" + seat.getSeat_no() );
-                    Thread.sleep( 5000 );
-                } catch ( InterruptedException ex ) {
-                    Logger.getLogger( SlaveThread.class.getName() ).log( Level.SEVERE, null, ex );
-                }
-                reservationMapper.book( connection, logger, planeId, seat.getSeat_no(), userThreadID );
-                informMaster( protocol.refusalToBookASeat );
-            }
-
-            isAlive = false;
+        //2. Reserve a seat
+        Seat seat = reservationMapper.reserve( connection, logger, planeId, userThreadID );
+        String seatId = (seat != null ? seat.getSeat_no() : "A1");
+//        if ( seat == null ) {
+//            informMaster( protocol.unsuccessfulReservation );
+//            return;
+//        }
+        Random rand = new Random();
+        //3. Pause for random number of seconds
+        int secsToSleep = (rand.nextInt( 7 ) + 1);
+        //System.out.println( "Hi, I am " + userThreadID + " and I will sleep for " + secsToSleep + " secs." );
+        try {
+            Thread.sleep( secsToSleep * 1000 );
+        } catch ( InterruptedException ex ) {
+            logger.severe( "Sleep exeption during 'user delay' simulation " + ex );
+            informMaster( protocol.internalError );
+            return;
         }
+
+        //4. Choose if book or not
+        int toBook = (rand.nextInt( 3 ) + 1);
+        //System.out.println( "Hi, I am " + userThreadID + " and I rolled " + toBook + " for booking." );
+        if ( toBook >= 3 ) {
+
+            //System.out.println( "Hi, I am " + userThreadID + " and I will try to book seat :" + seatId );
+            int responseBook = reservationMapper.book( connection, logger, planeId, seatId, userThreadID );
+
+            String response = "";
+            System.out.println( "SlaveThread : Response : " + responseBook );
+            switch ( responseBook ) {
+                case 0:
+                    response = protocol.successfulBooking;
+                    break;
+                case -1:
+                    response = protocol.unsuccessfulBooking_NotReserved;
+                    break;
+                case -2:
+                    response = protocol.unsuccessfulBooking_ReservedByAnotherUser;
+                    break;
+                case -3:
+                    response = protocol.unsuccessfulBooking_Timeout;
+                    break;
+                case -4:
+                    response = protocol.unsuccessfulBooking_AlreadyBooked;
+                    break;
+                default:
+                    response = protocol.internalError;
+                    break;
+            }
+
+            informMaster( response );
+            return;
+        } else {
+            try {
+                //System.out.println( "Hi, I am " + userThreadID + " and I will NOT try to book seat :" + seat.getSeat_no() );
+                Thread.sleep( 5000 );
+            } catch ( InterruptedException ex ) {
+                Logger.getLogger( SlaveThread.class.getName() ).log( Level.SEVERE, null, ex );
+            }
+            try {
+                reservationMapper.book( connection, logger, planeId, seatId, userThreadID );
+            } catch ( Exception e ) {
+                System.out.println( "e is : " + e );
+                logger.warning( "WHAT THE FUCK IS THIS SHIT : " + e );
+            }
+            informMaster( protocol.refusalToBookASeat );
+            return;
+        }
+
     }
 }

@@ -1,6 +1,8 @@
 package test;
 
 import controller.Controller;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class Tester {
 
@@ -14,7 +16,7 @@ public class Tester {
         controller.initializeConnection();
 
         //Core methods test sequence
-        controller.reserveSeat( planeID, 3535 );
+        //controller.reserveSeat( planeID, 3535 );
         //controller.reserveSeat( planeID, 1400 );
         //controller.bookSeat( planeID, "A1", 1400 );
         
@@ -32,7 +34,11 @@ public class Tester {
         //controller.bookAllSeats( planeID );
         //controller.reserveSeat( planeID, 1400 );
         //controller.bookSeat( planeID, "A1", 1400 );
-
+        
+        //System.out.println( "DUDE : " + controller.areAllSeatsBooked(planeID ) );        
+        //long MAX_DURATION = MILLISECONDS.convert( 5, SECONDS );
+        //System.out.println( "MAX_DURATION is : " + MAX_DURATION );
+        
         //close db conneciton
         controller.closeConnection();
     }
