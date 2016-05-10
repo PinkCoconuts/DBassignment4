@@ -85,7 +85,7 @@ public class SimpleThreads {
         t.interrupt();
 
         if ( reservedSeats < 86 ) {
-            nextThreadStarter( 2 );
+            nextThreadStarter( 6 );
         } else {
             if ( reservedSeats <= 96 ) {
                 if ( userThreadStack.size() < 5 && reservedSeats != 96 ) {
