@@ -1,4 +1,4 @@
-package testenv;
+package observerPattern;
 
 import dataSource.Reservation;
 import entities.Seat;

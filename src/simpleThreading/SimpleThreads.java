@@ -1,4 +1,4 @@
-package threading;
+package simpleThreading;
 
 import controller.Controller;
 import dataSource.Reservation;
@@ -69,8 +69,10 @@ public class SimpleThreads {
             case Protocol.unsuccessfulBooking_AlreadyBooked:
                 bookAlreadyBooked++;
                 break;
-            default:
+            case Protocol.internalError:
                 internalError++;
+                break;
+            default:
                 break;
         }
 

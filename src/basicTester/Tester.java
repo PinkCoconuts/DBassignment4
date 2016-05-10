@@ -1,4 +1,4 @@
-package test;
+package basicTester;
 
 import controller.Controller;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;

@@ -1,4 +1,4 @@
-package threading;
+package simpleThreading;
 
 import dataSource.Reservation;
 import entities.Seat;
@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Random;
 import java.util.logging.Logger;
-import static threading.SimpleThreads.threadMessage;
+import static simpleThreading.SimpleThreads.threadMessage;
 import utilities.DatabaseConnector;
 import utilities.Protocol;
 
@@ -46,7 +46,7 @@ class UserThread implements Runnable {
                 logger.severe( "SQL Exception while trying to connect to db " + ex );
                 return false;
             }
-            logger.info( "Connection with database initialized" );
+            //logger.info( "Connection with database initialized" );
         }
         return true;
     }
@@ -85,7 +85,7 @@ class UserThread implements Runnable {
         this.planeId = planeId;
         this.threadId = threadId;
         this.chosenProbability = chosenProbability;
-
+        
         databaseConnector = new DatabaseConnector( databaseHost[ 1 ], databaseUsername[ 1 ], databasePassword[ 1 ], null );
         initializeConnection( logger );
 
@@ -93,9 +93,8 @@ class UserThread implements Runnable {
     }
 
     public void run() {
-        String response = "No information";
+        String response = "No information " + threadId;
         if ( connection != null ) {
-
             Random rand = new Random();
 
             //2. Reserve a seat
@@ -106,7 +105,7 @@ class UserThread implements Runnable {
                 seat = reservationMapper.reserve( connection, logger, planeId, threadId );
             }
             String seatId = (seat != null ? seat.getSeat_no() : "A1");
-
+            
             //3. Pause for random number of seconds
             int userDelayImitator = (rand.nextInt( chosenProbability ) + 1);
 
@@ -118,9 +117,7 @@ class UserThread implements Runnable {
 
             //4. Choose if book or not
             int toBook = (rand.nextInt( 3 ) + 1);
-
             if ( toBook >= 3 ) {
-
                 int responseBook = reservationMapper.book( connection, logger, planeId, seatId, threadId );
                 System.out.println( "responseBook is : " + responseBook );
                 switch ( responseBook ) {
@@ -143,6 +140,8 @@ class UserThread implements Runnable {
                         response = Protocol.internalError + "Second";
                         break;
                 }
+            } else {
+                response = Protocol.refusalToBookASeat;
             }
         }
         threadMessage( response );
