@@ -1,31 +1,31 @@
 package utilities;
 
 public class Protocol {
-    
+
     //0 Booked 
-    public static String successfulBooking = "BOOKED#";
+    public static final String successfulBooking = "BOOKED#";
 
     //-1 Not booked error
-    public static String unsuccessfulBooking_NotReserved = "NOTRESERVEDBYME#";
+    public static final String unsuccessfulBooking_NotReserved = "NOTRESERVEDBYME#";
 
     //-2 Not booked error
-    public static String unsuccessfulBooking_ReservedByAnotherUser = "ALREADYRESERVED#";
+    public static final String unsuccessfulBooking_ReservedByAnotherUser = "ALREADYRESERVED#";
 
     //-3 Not booked error
-    public static String unsuccessfulBooking_Timeout = "UNBOOKED#";
+    public static final String unsuccessfulBooking_Timeout = "UNBOOKED#";
 
     //-4 Not booked error
-    public static String unsuccessfulBooking_AlreadyBooked = "ALREADYBOOKED#";
-    
+    public static final String unsuccessfulBooking_AlreadyBooked = "ALREADYBOOKED#";
+
     //Booking refusal
-    public static String refusalToBookASeat = "INOWANNANO#";
+    public static final String refusalToBookASeat = "INOWANNANO#";
 
     //Reserved
-    public static String successfulReservation = "RESERVED#";
+    public static final String successfulReservation = "RESERVED#";
 
     //Not Reserved
-    public static String unsuccessfulReservation = "FULL#";
+    public static final String unsuccessfulReservation = "FULL#";
 
     //General error message
-    public static String internalError = "OUCH#";
+    public static final String internalError = "OUCH#";
 }
