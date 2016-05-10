@@ -14,6 +14,7 @@ class UserThread implements Runnable {
 
     private String planeId;
     private int threadId;
+    private int chosenProbability;
 
     //Database Connection
     private DatabaseConnector databaseConnector = null;
@@ -79,10 +80,11 @@ class UserThread implements Runnable {
         return false;
     }
 
-    public UserThread( Logger logger, String planeId, int threadId ) {
+    public UserThread( Logger logger, String planeId, int threadId, int chosenProbability ) {
         this.logger = logger;
         this.planeId = planeId;
         this.threadId = threadId;
+        this.chosenProbability = chosenProbability;
 
         databaseConnector = new DatabaseConnector( databaseHost[ 1 ], databaseUsername[ 1 ], databasePassword[ 1 ], null );
         initializeConnection( logger );
@@ -91,30 +93,27 @@ class UserThread implements Runnable {
     }
 
     public void run() {
-        String response = Protocol.internalError;
+        String response = "No information";
         if ( connection != null ) {
 
             Random rand = new Random();
 
             //2. Reserve a seat
-            Seat seat = reservationMapper.reserve( connection, logger, planeId, threadId );
+            Seat seat = null;
+
+            int shouldReserve = (rand.nextInt( 3 ) + 1);
+            if ( shouldReserve > 1 ) {
+                seat = reservationMapper.reserve( connection, logger, planeId, threadId );
+            }
             String seatId = (seat != null ? seat.getSeat_no() : "A1");
 
-            //Maybe check if seat is empty and stop
-            /*
-             if ( seat == null ) {
-             informMaster( protocol.unsuccessfulReservation );
-             return;
-             }
-             */
             //3. Pause for random number of seconds
-            int userDelayImitator = (rand.nextInt( 6 ) + 1);
+            int userDelayImitator = (rand.nextInt( chosenProbability ) + 1);
 
             try {
                 Thread.sleep( userDelayImitator * 1000 );
             } catch ( InterruptedException ex ) {
-                System.out.println( "1" );
-                response = Protocol.internalError;
+                response = Protocol.internalError + "First";
             }
 
             //4. Choose if book or not
@@ -122,17 +121,8 @@ class UserThread implements Runnable {
 
             if ( toBook >= 3 ) {
 
-                int returnCode = rand.nextInt( 6 );
-
-                try {
-                    Thread.sleep( (returnCode + 1) * 1000 );
-                } catch ( InterruptedException ex ) {
-                    System.out.println( "2" );
-                    response = Protocol.internalError;
-                }
-
                 int responseBook = reservationMapper.book( connection, logger, planeId, seatId, threadId );
-
+                System.out.println( "responseBook is : " + responseBook );
                 switch ( responseBook ) {
                     case 0:
                         response = Protocol.successfulBooking;
@@ -150,8 +140,7 @@ class UserThread implements Runnable {
                         response = Protocol.unsuccessfulBooking_AlreadyBooked;
                         break;
                     default:
-                        System.out.println( "3" );
-                        response = Protocol.internalError;
+                        response = Protocol.internalError + "Second";
                         break;
                 }
             }

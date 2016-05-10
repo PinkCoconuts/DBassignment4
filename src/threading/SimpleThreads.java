@@ -82,19 +82,24 @@ public class SimpleThreads {
         Thread t = Thread.currentThread();
         t.interrupt();
 
-        if ( reservedSeats < 96 ) {
-            nextThreadStarter();
+        if ( reservedSeats < 86 ) {
+            nextThreadStarter( 2 );
         } else {
-            if ( userThreadStack.size() == 0 ) {
-                finalResults();
+            if ( reservedSeats <= 96 ) {
+                if ( userThreadStack.size() < 5 && reservedSeats != 96 ) {
+                    nextThreadStarter( 2 );
+                }
+                if ( userThreadStack.isEmpty() && reservedSeats == 96 ) {
+                    finalResults();
+                }
             }
         }
     }
 
-    private static void nextThreadStarter() {
+    private static void nextThreadStarter( int chosenProbability ) {
         threadsCounter++;
         String nextThreadName = "Thread" + threadsCounter;
-        UserThread nextUserThread = new UserThread( logger, planeID, threadsCounter );
+        UserThread nextUserThread = new UserThread( logger, planeID, threadsCounter, chosenProbability );
         Thread thread = new Thread( nextUserThread );
         thread.setName( nextThreadName );
         userThreadStack.put( nextThreadName, nextUserThread );
@@ -166,7 +171,7 @@ public class SimpleThreads {
         closeConnection( connection, logger );
         if ( clearStatus ) {
             for ( int i = 0; i < 10; i++ ) {
-                nextThreadStarter();
+                nextThreadStarter( 6 );
             }
         } else {
             System.out.println( "Error : Not cleaned properly" );
