@@ -134,18 +134,8 @@ class SlaveThread extends Observable implements Runnable {
             informMaster( response );
             return;
         } else {
-            try {
-                //System.out.println( "Hi, I am " + userThreadID + " and I will NOT try to book seat :" + seat.getSeat_no() );
-                Thread.sleep( 5000 );
-            } catch ( InterruptedException ex ) {
-                Logger.getLogger( SlaveThread.class.getName() ).log( Level.SEVERE, null, ex );
-            }
-            try {
-                reservationMapper.book( connection, logger, planeId, seatId, userThreadID );
-            } catch ( Exception e ) {
-                System.out.println( "e is : " + e );
-                logger.warning( "WHAT THE FUCK IS THIS SHIT : " + e );
-            }
+            reservationMapper.book( connection, logger, planeId, seatId, userThreadID );
+
             informMaster( protocol.refusalToBookASeat );
             return;
         }
